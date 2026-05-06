@@ -920,6 +920,26 @@
       element.addEventListener('pointerdown', (event) => {
         if (target === 'B' && state.mode === 'A') return;
         event.preventDefault();
+
+        // Fine adjustment tap zones (no drag start).
+        const rect = element.getBoundingClientRect();
+        const ratio = window.matchMedia('(max-width: 820px)').matches ? 0.20 : 0.10;
+        const leftZone = rect.width * ratio;
+        const rightZoneStart = rect.width * (1 - ratio);
+        const localX = event.clientX - rect.left;
+
+        const baseFreq = target === 'A' ? state.freqA : state.freqB;
+
+        if (localX <= leftZone) {
+          setFrequency(target, baseFreq - 1);
+          return;
+        }
+
+        if (localX >= rightZoneStart) {
+          setFrequency(target, baseFreq + 1);
+          return;
+        }
+
         element.setPointerCapture(event.pointerId);
         element.classList.add('active');
         document.body.classList.add('dragging-frequency');
