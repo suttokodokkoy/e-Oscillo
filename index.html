@@ -420,7 +420,7 @@
       </div>
 
       <div class="panel zoom" id="panelZoom">
-        <div class="panel-title"><strong>Zoom</strong><span class="readout" id="zoomReadout">22050 samples</span></div>
+        <div class="panel-title"><strong>Zoom</strong><span class="readout" id="zoomReadout">8820 samples</span></div>
         <label>表示サンプル数：帯を左右にドラッグ</label>
         <div class="drag-band" id="bandZoom">
           <div class="arrows"><span>← zoom in</span><span>zoom out →</span></div>
@@ -482,7 +482,7 @@
       triggerHoldSamples: 160,
       activeDrag: null,
       dragSensitivityHzPerPx: 1,
-      samplesAcross: 22050,
+      samplesAcross: 8820,
       samplesMin: 20,
       samplesMax: 44100,
       dragSensitivitySamplesPerPx: 1
@@ -989,17 +989,24 @@
         let delta = dx * state.dragSensitivitySamplesPerPx;
         const velocity = dx / dt;
 
-        // 強めの加速（Zoom専用チューニング）
+        // Zoom専用：速度に応じた加速
         const accelFactor = 1 + Math.min(20, Math.abs(velocity) * 2.2);
         delta *= accelFactor;
 
         const sign = Math.sign(delta);
         const abs = Math.abs(delta);
 
-        // 非線形ブースト（かなり強め）
+        // 非線形ブースト
         if (abs > 5) {
           const boosted = 5 + Math.pow(abs - 5, 1.35);
           delta = sign * boosted;
+        }
+
+        // 現在のsamples量に応じた動的スケーリング
+        // 大きなwindow時でも、見た目の変化率を維持する
+        if (Math.abs(delta) >= 2) {
+          const dynamicScale = 1 + (state.samplesAcross * 0.0001);
+          delta *= dynamicScale;
         }
 
         setSamples(state.samplesAcross + delta);
