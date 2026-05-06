@@ -1005,7 +1005,7 @@
         // 現在のsamples量に応じた動的スケーリング
         // 大きなwindow時でも、見た目の変化率を維持する
         if (Math.abs(delta) >= 2) {
-          const dynamicScale = 1 + (state.samplesAcross * 0.0001);
+          const dynamicScale = 1 + (state.samplesAcross * 0.0002);
           delta *= dynamicScale;
         }
 
