@@ -440,6 +440,24 @@
         e.preventDefault();
       }
     }, { passive: false });
+
+    // Disable context menu on interactive operation areas.
+    [
+      '#scope',
+      '#playBtn',
+      '#modeBtn',
+      '#triggerBtn',
+      '#volume',
+      '#bandA',
+      '#bandB',
+      '#bandZoom'
+    ].forEach((selector) => {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      el.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+      });
+    });
     const canvas = document.getElementById('scope');
     const ctx = canvas.getContext('2d');
 
@@ -911,11 +929,23 @@
           lastX: event.clientX,
           lastT: event.timeStamp
         };
+
+        // Pointer Lock: allow infinite dragging without screen edge limits.
+        try {
+          if (element.requestPointerLock && event.pointerType === 'mouse') {
+            element.requestPointerLock();
+          }
+        } catch (error) {
+          // Pointer Lock may be blocked in sandboxed previews; fall back to normal dragging.
+        }
       });
 
       element.addEventListener('pointermove', (event) => {
         if (!state.activeDrag || state.activeDrag.pointerId !== event.pointerId || state.activeDrag.target !== target) return;
-        const dx = event.clientX - state.activeDrag.lastX;
+        const dx = (typeof event.movementX === 'number' && document.pointerLockElement === element)
+          ? event.movementX
+          : (event.clientX - state.activeDrag.lastX);
+
         const dt = Math.max(1, event.timeStamp - state.activeDrag.lastT);
         state.activeDrag.lastX = event.clientX;
         state.activeDrag.lastT = event.timeStamp;
@@ -940,6 +970,10 @@
         element.classList.remove('active');
         document.body.classList.remove('dragging-frequency');
         state.activeDrag = null;
+
+        if (document.pointerLockElement === element) {
+          document.exitPointerLock();
+        }
       }
 
       element.addEventListener('pointerup', endDrag);
@@ -948,6 +982,10 @@
         element.classList.remove('active');
         document.body.classList.remove('dragging-frequency');
         if (state.activeDrag && state.activeDrag.target === target) state.activeDrag = null;
+
+        if (document.pointerLockElement === element) {
+          document.exitPointerLock();
+        }
       });
 
       element.addEventListener('keydown', (event) => {
@@ -976,11 +1014,22 @@
           lastX: event.clientX,
           lastT: event.timeStamp
         };
+
+        try {
+          if (element.requestPointerLock && event.pointerType === 'mouse') {
+            element.requestPointerLock();
+          }
+        } catch (error) {
+          // Pointer Lock may be blocked in sandboxed previews; fall back to normal dragging.
+        }
       });
 
       element.addEventListener('pointermove', (event) => {
         if (!state.activeDrag || state.activeDrag.pointerId !== event.pointerId || state.activeDrag.target !== 'ZOOM') return;
-        const dx = event.clientX - state.activeDrag.lastX;
+        const dx = (typeof event.movementX === 'number' && document.pointerLockElement === element)
+          ? event.movementX
+          : (event.clientX - state.activeDrag.lastX);
+
         const dt = Math.max(1, event.timeStamp - state.activeDrag.lastT);
         state.activeDrag.lastX = event.clientX;
         state.activeDrag.lastT = event.timeStamp;
@@ -1017,6 +1066,10 @@
         element.classList.remove('active');
         document.body.classList.remove('dragging-frequency');
         state.activeDrag = null;
+
+        if (document.pointerLockElement === element) {
+          document.exitPointerLock();
+        }
       }
 
       element.addEventListener('pointerup', endDrag);
@@ -1025,6 +1078,10 @@
         element.classList.remove('active');
         document.body.classList.remove('dragging-frequency');
         if (state.activeDrag && state.activeDrag.target === 'ZOOM') state.activeDrag = null;
+
+        if (document.pointerLockElement === element) {
+          document.exitPointerLock();
+        }
       });
     }
 
