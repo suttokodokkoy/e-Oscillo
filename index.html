@@ -254,7 +254,7 @@
     }
 
     .drag-band.active {
-      cursor: none;
+      cursor: ew-resize;
       box-shadow: 0 0 0 2px rgba(112,214,255,0.20) inset, 0 0 28px rgba(112,214,255,0.12);
     }
 
@@ -272,7 +272,7 @@
 
     body.dragging-frequency,
     body.dragging-frequency * {
-      cursor: none !important;
+      cursor: ew-resize !important;
     }
 
     .hint {
@@ -622,7 +622,7 @@
       freqAReadout.textContent = `${Math.round(state.freqA)} Hz`;
       freqBReadout.textContent = `${Math.round(state.freqB)} Hz`;
       volumeReadout.textContent = `${Math.round(state.volume * 100)}%`;
-      zoomReadout.textContent = `${Math.round(state.samplesAcross)} samples (${(state.samplesAcross / state.sampleRateForDrawing * 1000).toFixed(1)} ms)`;
+      zoomReadout.textContent = `${Math.round(state.samplesAcross)} samples (${(state.samplesAcross / state.sampleRateForDrawing * 1000).toFixed(2)} ms)`;
       oscSummary.textContent = `A ${Math.round(state.freqA)} / B ${Math.round(state.freqB)} Hz`;
 
       const isAOnly = state.mode === 'A';
@@ -950,15 +950,7 @@
           lastT: event.timeStamp
         };
 
-        // Pointer Lock: allow infinite dragging without screen edge limits.
-        try {
-          if (element.requestPointerLock && event.pointerType === 'mouse') {
-            element.requestPointerLock();
-          }
-        } catch (error) {
-          // Pointer Lock may be blocked in sandboxed previews; fall back to normal dragging.
-        }
-      });
+        });
 
       element.addEventListener('pointermove', (event) => {
         if (!state.activeDrag || state.activeDrag.pointerId !== event.pointerId || state.activeDrag.target !== target) return;
@@ -989,12 +981,7 @@
         if (!state.activeDrag || state.activeDrag.pointerId !== event.pointerId || state.activeDrag.target !== target) return;
         element.classList.remove('active');
         document.body.classList.remove('dragging-frequency');
-        state.activeDrag = null;
-
-        if (document.pointerLockElement === element) {
-          document.exitPointerLock();
-        }
-      }
+        state.activeDrag = null;}
 
       element.addEventListener('pointerup', endDrag);
       element.addEventListener('pointercancel', endDrag);
@@ -1035,14 +1022,7 @@
           lastT: event.timeStamp
         };
 
-        try {
-          if (element.requestPointerLock && event.pointerType === 'mouse') {
-            element.requestPointerLock();
-          }
-        } catch (error) {
-          // Pointer Lock may be blocked in sandboxed previews; fall back to normal dragging.
-        }
-      });
+        });
 
       element.addEventListener('pointermove', (event) => {
         if (!state.activeDrag || state.activeDrag.pointerId !== event.pointerId || state.activeDrag.target !== 'ZOOM') return;
